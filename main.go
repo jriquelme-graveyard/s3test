@@ -1,14 +1,14 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"io/ioutil"
 	"log"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/aws/external"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"golang.org/x/net/context"
 )
 
 func main() {
@@ -30,19 +30,20 @@ func main() {
 }
 
 func CopyFileFromS3(bucket, key string) error {
-	cfg, err := config.LoadDefaultConfig()
+	cfg, err := external.LoadDefaultAWSConfig()
 	if err != nil {
 		return err
 	}
-	client := s3.NewFromConfig(cfg)
-	output, err := client.GetObject(context.Background(), &s3.GetObjectInput{
+	client := s3.New(cfg)
+	request := client.GetObjectRequest(&s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
+	response, err := request.Send(context.Background())
 	if err != nil {
 		return err
 	}
-	b, err := ioutil.ReadAll(output.Body)
+	b, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return err
 	}
