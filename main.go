@@ -34,6 +34,8 @@ func CopyFileFromS3(bucket, key string) error {
 	if err != nil {
 		return err
 	}
+	// log the request with body along with received response
+	cfg.ClientLogMode = aws.LogRequestWithBody | aws.LogResponseWithBody
 	client := s3.NewFromConfig(cfg)
 	output, err := client.GetObject(context.Background(), &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
